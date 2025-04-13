@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../models/cat_model.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import '../../data/models/cat_model.dart';
 
 class CatCard extends StatelessWidget {
   final Cat cat;
@@ -21,38 +22,23 @@ class CatCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Image.network(
-                cat.imageUrl,
+              CachedNetworkImage(
+                imageUrl: cat.imageUrl,
                 height: 250,
                 width: double.infinity,
                 fit: BoxFit.cover,
-                loadingBuilder: (
-                  BuildContext context,
-                  Widget child,
-                  ImageChunkEvent? loadingProgress,
-                ) {
-                  if (loadingProgress == null) {
-                    return child;
-                  }
-                  return SizedBox(
-                    height: 250,
-                    child: Center(
-                      child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
-                        value:
-                            loadingProgress.expectedTotalBytes != null
-                                ? loadingProgress.cumulativeBytesLoaded /
-                                    loadingProgress.expectedTotalBytes!
-                                : null,
+                placeholder:
+                    (context, url) => SizedBox(
+                      height: 250,
+                      child: Center(
+                        child: CircularProgressIndicator(color: Colors.black),
                       ),
                     ),
-                  );
-                },
-                errorBuilder: (context, error, stackTrace) {
-                  return Center(child: Icon(Icons.error, color: Colors.red));
-                },
+                errorWidget:
+                    (context, url, error) =>
+                        Center(child: Icon(Icons.error, color: Colors.red)),
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               Text(
                 cat.breed,
                 style: GoogleFonts.montserratAlternates(
@@ -61,7 +47,7 @@ class CatCard extends StatelessWidget {
                   color: Colors.black,
                 ),
               ),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               Text(
                 'Origin: ${cat.origin}',
                 style: GoogleFonts.montserratAlternates(
@@ -69,7 +55,7 @@ class CatCard extends StatelessWidget {
                   color: Colors.black,
                 ),
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
             ],
           ),
         ),

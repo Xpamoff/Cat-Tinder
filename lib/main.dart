@@ -1,9 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'screens/main_screen.dart';
+import 'package:provider/provider.dart';
+import 'di/injection.dart';
+import 'presentation/providers/cat_provider.dart';
+import 'presentation/providers/liked_cat_provider.dart';
+import 'presentation/screens/main_screen.dart';
 
 void main() {
-  runApp(MyApp());
+  setupInjection();
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => sl<CatProvider>()),
+        ChangeNotifierProvider(create: (_) => sl<LikedCatProvider>()),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -11,10 +23,6 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(textTheme: GoogleFonts.montserratAlternatesTextTheme()),
-      home: MainScreen(),
-    );
+    return MaterialApp(title: 'Cat Tinder', home: const MainScreen());
   }
 }
