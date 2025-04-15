@@ -181,7 +181,6 @@ class MainScreenState extends State<MainScreen> {
                         CardSwiperDirection direction,
                       ) {
                         if (direction == CardSwiperDirection.right) {
-                          catProvider.incrementLikeCount();
                           final likedCat = LikedCat(
                             cat: catProvider.cats[previousIndex],
                             likedDate: DateTime.now(),
@@ -224,12 +223,16 @@ class MainScreenState extends State<MainScreen> {
                         ),
                       ],
                     ),
-                    Text(
-                      'Dislikes: ${catProvider.dislikeCount}, Likes: ${catProvider.likeCount}',
-                      style: GoogleFonts.montserratAlternates(
-                        fontSize: 16,
-                        color: Colors.white,
-                      ),
+                    Consumer<LikedCatProvider>(
+                      builder: (context, likedCatProvider, child) {
+                        return Text(
+                          'Dislikes: ${catProvider.dislikeCount}, Likes: ${likedCatProvider.likedCats.length}',
+                          style: GoogleFonts.montserratAlternates(
+                            fontSize: 16,
+                            color: Colors.white,
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),

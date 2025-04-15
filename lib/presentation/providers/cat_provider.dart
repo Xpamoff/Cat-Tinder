@@ -19,10 +19,6 @@ class CatProvider extends ChangeNotifier {
 
   String? get errorMessage => _errorMessage;
 
-  int _likeCount = 0;
-
-  int get likeCount => _likeCount;
-
   int _dislikeCount = 0;
 
   int get dislikeCount => _dislikeCount;
@@ -75,11 +71,6 @@ class CatProvider extends ChangeNotifier {
       _isLoading = false;
       notifyListeners();
     }
-  }
-
-  void incrementLikeCount() {
-    _likeCount++;
-    notifyListeners();
   }
 
   void incrementDislikeCount() {
