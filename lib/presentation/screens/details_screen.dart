@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../../data/models/cat_model.dart';
+import '../../domain/entities/cat_entity.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class DetailsScreen extends StatelessWidget {
-  final Cat cat;
+  final CatEntity cat;
 
   const DetailsScreen({super.key, required this.cat});
 

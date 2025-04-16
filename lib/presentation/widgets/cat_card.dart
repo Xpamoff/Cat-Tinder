@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../../data/models/cat_model.dart';
+import '../../domain/entities/cat_entity.dart';
 
 class CatCard extends StatelessWidget {
-  final Cat cat;
+  final CatEntity cat;
   final VoidCallback onTap;
 
   const CatCard({super.key, required this.cat, required this.onTap});

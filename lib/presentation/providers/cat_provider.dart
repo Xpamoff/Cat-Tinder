@@ -1,15 +1,19 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import '../../data/models/cat_model.dart';
-import '../../data/services/cat_service.dart';
-import '../../di/injection.dart';
+import '../../domain/entities/cat_entity.dart';
+import '../../domain/repositories/i_cat_repository.dart';
 
 class CatProvider extends ChangeNotifier {
-  final CatService _catService = sl<CatService>();
+  final ICatRepository _catRepository;
 
-  final List<Cat> _cats = [];
+  CatProvider({required ICatRepository catRepository})
+    : _catRepository = catRepository {
+    loadInitialCats();
+  }
 
-  List<Cat> get cats => _cats;
+  final List<CatEntity> _cats = [];
+
+  List<CatEntity> get cats => _cats;
 
   bool _isLoading = false;
 
@@ -42,11 +46,11 @@ class CatProvider extends ChangeNotifier {
 
     try {
       final catsList = await Future.wait([
-        _catService.fetchRandomCat(),
-        _catService.fetchRandomCat(),
-        _catService.fetchRandomCat(),
-        _catService.fetchRandomCat(),
-        _catService.fetchRandomCat(),
+        _catRepository.fetchRandomCat(),
+        _catRepository.fetchRandomCat(),
+        _catRepository.fetchRandomCat(),
+        _catRepository.fetchRandomCat(),
+        _catRepository.fetchRandomCat(),
       ]);
       _cats.addAll(catsList);
       _isLoading = false;
@@ -63,7 +67,7 @@ class CatProvider extends ChangeNotifier {
   Future<void> loadNewCat() async {
     if (_errorMessage != null) return;
     try {
-      final cat = await _catService.fetchRandomCat();
+      final cat = await _catRepository.fetchRandomCat();
       _cats.add(cat);
       notifyListeners();
     } catch (e) {

@@ -1,3 +1,5 @@
+import '../../domain/entities/cat_entity.dart';
+
 class Cat {
   final String imageUrl;
   String breed;
@@ -38,6 +40,18 @@ class Cat {
           json['breeds'] != null
               ? json['breeds'][0]['life_span'] ?? 'Unknown'
               : 'Unknown',
+    );
+  }
+
+  CatEntity toEntity() {
+    return CatEntity(
+      imageUrl: imageUrl,
+      id: id,
+      breed: breed,
+      temperament: temperament,
+      origin: origin,
+      description: description,
+      lifeSpan: lifeSpan,
     );
   }
 }
