@@ -17,18 +17,21 @@ class SwipeActionButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final icon = isLike ? Icons.thumb_up : Icons.thumb_down;
 
-    return IconButton(
-      icon: Icon(icon, color: Colors.white),
-      onPressed:
-          isDisabled
-              ? null
-              : () {
-                if (isLike) {
-                  controller.swipe(CardSwiperDirection.right);
-                } else {
-                  controller.swipe(CardSwiperDirection.left);
-                }
-              },
+    return Opacity(
+      opacity: isDisabled ? 0.5 : 1.0,
+      child: IconButton(
+        icon: Icon(icon, color: Colors.white),
+        onPressed:
+            isDisabled
+                ? null
+                : () {
+                  if (isLike) {
+                    controller.swipe(CardSwiperDirection.right);
+                  } else {
+                    controller.swipe(CardSwiperDirection.left);
+                  }
+                },
+      ),
     );
   }
 }

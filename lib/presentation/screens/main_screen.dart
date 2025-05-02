@@ -5,7 +5,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:page_transition/page_transition.dart';
 
 import '../../domain/entities/cat_entity.dart';
-import '../../domain/entities/liked_cat_entity.dart';
 import '../providers/cat_provider.dart';
 import '../providers/liked_cat_provider.dart';
 import 'liked_cats_screen.dart';
@@ -18,43 +17,14 @@ class MainScreen extends StatelessWidget {
 
   MainScreen({super.key});
 
-  Future<void> _showErrorDialog(BuildContext context, String message) async {
-    await showDialog(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            backgroundColor: const Color(0xFF2F2F2F),
-            title: Text(
-              'Network Error',
-              style: GoogleFonts.montserratAlternates(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-            content: Text(
-              message,
-              style: GoogleFonts.montserratAlternates(
-                fontSize: 16,
-                color: Colors.white,
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  Provider.of<CatProvider>(context, listen: false).retry();
-                },
-                child: Text(
-                  'Retry',
-                  style: GoogleFonts.montserratAlternates(
-                    fontSize: 16,
-                    color: Colors.blueAccent,
-                  ),
-                ),
-              ),
-            ],
-          ),
+  void _showErrorSnackBar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: Colors.redAccent,
+        duration: const Duration(seconds: 10),
+      ),
     );
   }
 
@@ -129,22 +99,15 @@ class MainScreen extends StatelessWidget {
           CardSwiperDirection direction,
         ) {
           if (direction == CardSwiperDirection.right) {
-            final likedCat = LikedCatEntity(
-              cat: catProvider.cats[previousIndex],
-              likedDate: DateTime.now(),
-            );
-            Provider.of<LikedCatProvider>(
-              context,
-              listen: false,
-            ).addLikedCat(likedCat);
+            catProvider.likeCat(previousIndex);
           } else if (direction == CardSwiperDirection.left) {
-            catProvider.incrementDislikeCount();
+            catProvider.dislikeCat(previousIndex);
           }
-          catProvider.loadNewCat();
+          catProvider.loadNextCat();
           return true;
         },
-        onEnd: () {
-          catProvider.loadInitialCats();
+        onEnd: () async {
+          catProvider.loadAdditionalCats();
         },
       ),
     );
@@ -154,18 +117,9 @@ class MainScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<CatProvider>(
       builder: (context, catProvider, _) {
-        if (catProvider.isLoading && catProvider.errorMessage == null) {
-          return Scaffold(
-            backgroundColor: const Color(0xFF2F2F2F),
-            body: const Center(
-              child: CircularProgressIndicator(color: Colors.white),
-            ),
-          );
-        }
-
         if (catProvider.errorMessage != null) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            _showErrorDialog(context, catProvider.errorMessage!);
+            _showErrorSnackBar(context, catProvider.errorMessage!);
           });
         }
 
@@ -174,7 +128,11 @@ class MainScreen extends StatelessWidget {
           appBar: _buildAppBar(context),
           body: Stack(
             children: [
-              if (catProvider.cats.isNotEmpty)
+              if (catProvider.isLoading)
+                const Center(
+                  child: CircularProgressIndicator(color: Colors.white),
+                ),
+              if (!catProvider.isLoading && catProvider.cats.isNotEmpty)
                 Center(child: _buildSwiper(context, catProvider)),
               Positioned(
                 bottom: 20,
@@ -201,7 +159,7 @@ class MainScreen extends StatelessWidget {
                     Consumer<LikedCatProvider>(
                       builder: (context, likedCatProvider, _) {
                         return Text(
-                          'Dislikes: ${catProvider.dislikeCount}, Likes: ${likedCatProvider.likedCats.length}',
+                          'Dislikes: ${catProvider.dislikeCount}, Likes: ${catProvider.likeCount}',
                           style: GoogleFonts.montserratAlternates(
                             fontSize: 16,
                             color: Colors.white,

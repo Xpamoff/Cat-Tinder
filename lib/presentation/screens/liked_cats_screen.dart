@@ -1,29 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../../presentation/providers/liked_cat_provider.dart';
 import 'package:google_fonts/google_fonts.dart';
+
+import '../../domain/entities/liked_cat_entity.dart';
+import '../providers/liked_cat_provider.dart';
+import 'details_screen.dart';
 
 class LikedCatsScreen extends StatelessWidget {
   const LikedCatsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final likedCatProvider = Provider.of<LikedCatProvider>(context);
-    final likedCats = likedCatProvider.likedCats;
-    final allLikedCats = likedCatProvider.allLikedCats;
-    final currentFilter = likedCatProvider.filter;
+    final likedCatProvider = Provider.of<LikedCatProvider>(
+      context,
+      listen: false,
+    );
 
-    String message;
-    if (allLikedCats.isEmpty) {
-      message =
-          'No liked cats yet! :((\nTry swiping right on those you really adore!';
-    } else if (currentFilter.isNotEmpty) {
-      message =
-          'No cats match your filter :(\nPlease adjust your search criteria!';
-    } else {
-      message = 'No liked cats found.';
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      likedCatProvider.fetchLikedCats();
+    });
 
     return Scaffold(
       backgroundColor: const Color(0xFF2F2F2F),
@@ -66,71 +63,99 @@ class LikedCatsScreen extends StatelessWidget {
               },
             ),
           ),
-          if (likedCats.isEmpty)
-            Expanded(
-              child: Center(
-                child: Text(
-                  message,
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.montserratAlternates(
-                    fontSize: 18,
-                    color: Colors.white,
-                    fontStyle: FontStyle.italic,
-                  ),
-                ),
-              ),
-            )
-          else
-            Expanded(
-              child: ListView.builder(
-                itemCount: likedCats.length,
-                itemBuilder: (context, index) {
-                  final likedCat = likedCats[index];
-                  return ListTile(
-                    leading: CachedNetworkImage(
-                      imageUrl: likedCat.cat.imageUrl,
-                      width: 50,
-                      height: 50,
-                      fit: BoxFit.cover,
-                      placeholder:
-                          (context, url) => const SizedBox(
-                            width: 50,
-                            height: 50,
-                            child: Center(
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-                      errorWidget:
-                          (context, url, error) =>
-                              const Icon(Icons.error, color: Colors.red),
-                    ),
-                    title: Text(
-                      likedCat.cat.breed,
+          Expanded(
+            child: Consumer<LikedCatProvider>(
+              builder: (context, provider, _) {
+                final likedCats = provider.likedCats;
+                final allLikedCats = provider.allLikedCats;
+                final filter = provider.filter;
+
+                String message;
+                if (allLikedCats.isEmpty) {
+                  message =
+                      'No liked cats yet! :((\nTry swiping right on those you really adore!';
+                } else if (filter.isNotEmpty && likedCats.isEmpty) {
+                  message =
+                      'No cats match your filter :(\nPlease adjust your search criteria!';
+                } else {
+                  message = '';
+                }
+
+                if (message.isNotEmpty) {
+                  return Center(
+                    child: Text(
+                      message,
+                      textAlign: TextAlign.center,
                       style: GoogleFonts.montserratAlternates(
                         fontSize: 18,
                         color: Colors.white,
+                        fontStyle: FontStyle.italic,
                       ),
-                    ),
-                    subtitle: Text(
-                      'Liked on: ${likedCat.likedDate.toLocal().toString().split(' ')[0]}',
-                      style: GoogleFonts.montserratAlternates(
-                        fontSize: 14,
-                        color: Colors.white70,
-                      ),
-                    ),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.delete, color: Colors.red),
-                      onPressed: () {
-                        likedCatProvider.removeLikedCat(likedCat);
-                      },
                     ),
                   );
-                },
-              ),
+                }
+
+                return ListView.builder(
+                  itemCount: likedCats.length,
+                  itemBuilder: (context, index) {
+                    final LikedCatEntity likedCat = likedCats[index];
+                    return ListTile(
+                      leading: CachedNetworkImage(
+                        imageUrl: likedCat.cat.imageUrl,
+                        width: 50,
+                        height: 50,
+                        fit: BoxFit.cover,
+                        placeholder:
+                            (context, url) => const SizedBox(
+                              width: 50,
+                              height: 50,
+                              child: Center(
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                        errorWidget:
+                            (context, url, error) =>
+                                const Icon(Icons.error, color: Colors.red),
+                      ),
+                      title: Text(
+                        likedCat.cat.breed,
+                        style: GoogleFonts.montserratAlternates(
+                          fontSize: 18,
+                          color: Colors.white,
+                        ),
+                      ),
+                      subtitle: Text(
+                        'Liked on: ${likedCat.likedDate.toLocal().toIso8601String().split('T').first}',
+                        style: GoogleFonts.montserratAlternates(
+                          fontSize: 14,
+                          color: Colors.white70,
+                        ),
+                      ),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.delete, color: Colors.red),
+                        onPressed: () {
+                          provider.removeLikedCat(likedCat);
+                        },
+                      ),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          PageTransition(
+                            type: PageTransitionType.rightToLeft,
+                            duration: const Duration(milliseconds: 300),
+                            child: DetailsScreen(cat: likedCat.cat),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                );
+              },
             ),
+          ),
         ],
       ),
     );
